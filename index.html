@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FastCare - Emergency Assistance</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #2563eb;
+            --secondary: #0ea5e9;
+            --accent: #ef4444;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --gray: #64748b;
+            --critical: #dc2626;
+            --urgent: #ea580c;
+            --pending: #3b82f6;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%);
+            color: var(--dark);
+            min-height: 100vh;
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+        
+        .emergency-card {
+            transition: all 0.3s ease;
+            border-left: 4px solid;
+        }
+        
+        .emergency-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 20px rgba(0, 0, 0, 0.15);
+        }
+        
+        .critical-card {
+            border-left-color: var(--critical);
+        }
+        
+        .urgent-card {
+            border-left-color: var(--urgent);
+        }
+        
+        .pending-card {
+            border-left-color: var(--pending);
+        }
+        
+        .pulse-animation {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.4);
+            }
+            70% {
+                box-shadow: 0 0 0 10px rgba(239, 68, 68, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(239, 68, 68, 0);
+            }
+        }
+        
+        .notification {
+            animation: slideInRight 0.5s ease;
+        }
+        
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+        
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status-pending {
+            background-color: #dbeafe;
+            color: var(--pending);
+        }
+        
+        .status-accepted {
+            background-color: #d1fae5;
+            color: var(--success);
+        }
+        
+        .status-declined {
+            background-color: #fee2e2;
+            color: var(--accent);
+        }
+        
+        .urgency-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            color: white;
+        }
+        
+        .urgency-critical {
+            background-color: var(--critical);
+        }
+        
+        .urgency-urgent {
+            background-color: var(--urgent);
+        }
+        
+        .stats-card {
+            transition: all 0.3s ease;
+        }
+        
+        .stats-card:hover {
+            transform: translateY(-3px);
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        
+        .step-indicator::before {
+            content: '';
+            position: absolute;
+            top: 20px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: #e5e7eb;
+            z-index: 1;
+        }
+        
+        .step {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .step-number {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #e5e7eb;
+            color: #6b7280;
+            font-weight: 600;
+            margin-bottom: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .step.active .step-number {
+            background-color: var(--primary);
+            color: white;
+        }
+        
+        .step-label {
+            font-size: 14px;
+            color: #6b7280;
+            font-weight: 500;
+        }
+        
+        .step.active .step-label {
+            color: var(--primary);
+            font-weight: 600;
+        }
+        
+        .form-section {
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .problem-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .problem-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .problem-card.selected {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+        }
+        
+        .hospital-card {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .hospital-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .hospital-card.selected {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+        }
+        
+        .urgency-option {
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .urgency-option:hover {
+            transform: scale(1.02);
+        }
+        
+        .urgency-option.selected {
+            border-color: var(--primary);
+            background-color: #eff6ff;
+        }
+        
+        .countdown {
+            font-size: 18px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 10px 0;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background-color: #e5e7eb;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: var(--primary);
+            width: 0%;
+            transition: width 3s linear;
+        }
+        
+        .accepted-notification {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+            animation: popIn 0.5s ease;
+        }
+        
+        @keyframes popIn {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+    </style>
+</head>
+<body class="min-h-screen">
+    <div class="dashboard-container max-w-4xl mx-auto px-4 py-8">
+        <!-- Header -->
+        <header class="flex justify-between items-center py-4 mb-8 glass-effect rounded-2xl px-6">
+            <div class="flex items-center space-x-3">
+                <div class="bg-blue-500 p-3 rounded-full">
+                    <i class="fas fa-bolt text-white text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-3xl font-bold text-blue-800">FastCare</h1>
+                    <p class="text-gray-600 text-sm">Emergency Assistance</p>
+                </div>
+            </div>
+            <div class="text-right">
+                <div id="current-time" class="text-2xl font-semibold text-blue-800">9:41</div>
+                <div class="text-gray-600 text-sm">Patient Portal</div>
+            </div>
+        </header>
+        
+        <!-- Step Indicator -->
+        <div class="step-indicator">
+            <div class="step active" data-step="1">
+                <div class="step-number">1</div>
+                <div class="step-label">Select Problem</div>
+            </div>
+            <div class="step" data-step="2">
+                <div class="step-number">2</div>
+                <div class="step-label">Find Hospital</div>
+            </div>
+            <div class="step" data-step="3">
+                <div class="step-number">3</div>
+                <div class="step-label">Send Request</div>
+            </div>
+        </div>
+        
+        <!-- Step 1: Select Problem -->
+        <div id="step1" class="form-section active">
+            <h2 class="text-2xl font-bold text-blue-800 mb-6">What is your medical emergency?</h2>
+            <p class="text-gray-600 mb-6">Select the medical problem you're experiencing to find the most appropriate hospitals.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
+                <div class="problem-card glass-effect rounded-xl p-5 border-2 border-gray-200" data-problem="heart-attack">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-red-100 p-3 rounded-full">
+                            <i class="fas fa-heartbeat text-red-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Heart Attack</h3>
+                            <p class="text-gray-600 text-sm">Chest pain, shortness of breath</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="problem-card glass-effect rounded-xl p-5 border-2 border-gray-200" data-problem="stroke">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-orange-100 p-3 rounded-full">
+                            <i class="fas fa-brain text-orange-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Stroke</h3>
+                            <p class="text-gray-600 text-sm">Facial drooping, speech difficulty</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="problem-card glass-effect rounded-xl p-5 border-2 border-gray-200" data-problem="accident">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-blue-100 p-3 rounded-full">
+                            <i class="fas fa-car-crash text-blue-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Accident</h3>
+                            <p class="text-gray-600 text-sm">Trauma, injuries from impact</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="problem-card glass-effect rounded-xl p-5 border-2 border-gray-200" data-problem="respiratory">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-green-100 p-3 rounded-full">
+                            <i class="fas fa-lungs text-green-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Respiratory Issue</h3>
+                            <p class="text-gray-600 text-sm">Breathing difficulty, asthma</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="problem-card glass-effect rounded-xl p-5 border-2 border-gray-200" data-problem="allergic">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-purple-100 p-3 rounded-full">
+                            <i class="fas fa-allergies text-purple-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Severe Allergic Reaction</h3>
+                            <p class="text-gray-600 text-sm">Swelling, difficulty breathing</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="problem-card glass-effect rounded-xl p-5 border-2 border-gray-200" data-problem="other">
+                    <div class="flex items-center space-x-4">
+                        <div class="bg-gray-100 p-3 rounded-full">
+                            <i class="fas fa-plus-circle text-gray-500 text-xl"></i>
+                        </div>
+                        <div>
+                            <h3 class="font-bold text-lg">Other Emergency</h3>
+                            <p class="text-gray-600 text-sm">Specify in next step</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="flex justify-end">
+                <button id="next-step1" class="bg-blue-500 text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-blue-600 transition">
+                    <span>Find Hospitals</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 2: Find Hospital -->
+        <div id="step2" class="form-section">
+            <h2 class="text-2xl font-bold text-blue-800 mb-6">Select a Hospital</h2>
+            <p class="text-gray-600 mb-6">Based on your condition, we've found these specialized hospitals near you.</p>
+            
+            <div id="hospital-list" class="space-y-4 mb-8">
+                <!-- Hospitals will be dynamically populated here -->
+            </div>
+            
+            <div class="flex justify-between">
+                <button id="prev-step2" class="bg-gray-500 text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back</span>
+                </button>
+                <button id="next-step2" class="bg-blue-500 text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-blue-600 transition">
+                    <span>Continue to Request</span>
+                    <i class="fas fa-arrow-right"></i>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Step 3: Send Request -->
+        <div id="step3" class="form-section">
+            <h2 class="text-2xl font-bold text-blue-800 mb-6">Send Emergency Request</h2>
+            <p class="text-gray-600 mb-6">Provide details about your situation to help the hospital prepare.</p>
+            
+            <div class="glass-effect rounded-xl p-6 mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                    <div>
+                        <p class="text-gray-500 text-sm">Selected Problem</p>
+                        <p id="selected-problem" class="font-semibold text-lg">-</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500 text-sm">Selected Hospital</p>
+                        <p id="selected-hospital" class="font-semibold text-lg">-</p>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label class="block text-gray-700 font-medium mb-2">Urgency Level</label>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="urgency-option glass-effect rounded-xl p-4 border-2 border-gray-200 text-center" data-urgency="critical">
+                            <div class="bg-red-100 p-3 rounded-full inline-block mb-2">
+                                <i class="fas fa-exclamation-triangle text-red-500 text-xl"></i>
+                            </div>
+                            <h3 class="font-bold">Critical</h3>
+                            <p class="text-sm text-gray-600">Life-threatening condition</p>
+                        </div>
+                        
+                        <div class="urgency-option glass-effect rounded-xl p-4 border-2 border-gray-200 text-center" data-urgency="severe">
+                            <div class="bg-orange-100 p-3 rounded-full inline-block mb-2">
+                                <i class="fas fa-exclamation-circle text-orange-500 text-xl"></i>
+                            </div>
+                            <h3 class="font-bold">Severe</h3>
+                            <p class="text-sm text-gray-600">Serious but stable condition</p>
+                        </div>
+                        
+                        <div class="urgency-option glass-effect rounded-xl p-4 border-2 border-gray-200 text-center" data-urgency="urgent">
+                            <div class="bg-yellow-100 p-3 rounded-full inline-block mb-2">
+                                <i class="fas fa-clock text-yellow-500 text-xl"></i>
+                            </div>
+                            <h3 class="font-bold">Urgent</h3>
+                            <p class="text-sm text-gray-600">Needs attention soon</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="mb-6">
+                    <label for="situation-details" class="block text-gray-700 font-medium mb-2">Situation Details</label>
+                    <textarea id="situation-details" rows="4" class="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent" placeholder="Describe your symptoms, location, and any other important details..."></textarea>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="flex items-center">
+                        <input type="checkbox" id="consent-checkbox" class="rounded text-blue-500 focus:ring-blue-500">
+                        <span class="ml-2 text-gray-700">I consent to share my location and medical information with the selected hospital</span>
+                    </label>
+                </div>
+            </div>
+            
+            <div class="flex justify-between">
+                <button id="prev-step3" class="bg-gray-500 text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-gray-600 transition">
+                    <i class="fas fa-arrow-left"></i>
+                    <span>Back</span>
+                </button>
+                <button id="send-request" class="bg-red-500 text-white px-6 py-3 rounded-lg flex items-center space-x-2 hover:bg-red-600 transition">
+                    <i class="fas fa-paper-plane"></i>
+                    <span>Send Emergency Request</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Request Confirmation -->
+        <div id="confirmation" class="form-section text-center py-10">
+            <div class="glass-effect rounded-2xl p-8 max-w-md mx-auto">
+                <div class="bg-green-100 p-4 rounded-full inline-block mb-4">
+                    <i class="fas fa-check-circle text-green-500 text-4xl"></i>
+                </div>
+                <h2 class="text-2xl font-bold text-gray-800 mb-2">Request Sent Successfully!</h2>
+                <p class="text-gray-600 mb-6">Your emergency request has been sent to the hospital. They are preparing for your arrival.</p>
+                
+                <div class="bg-blue-50 p-4 rounded-lg mb-6 text-left">
+                    <p class="font-semibold mb-2">Request Details:</p>
+                    <p id="confirmation-problem" class="text-sm">Problem: -</p>
+                    <p id="confirmation-hospital" class="text-sm">Hospital: -</p>
+                    <p id="confirmation-urgency" class="text-sm">Urgency: -</p>
+                    <p id="confirmation-eta" class="text-sm font-bold mt-2">Estimated Response Time: <span class="text-blue-600">5-10 minutes</span></p>
+                </div>
+                
+                <!-- Countdown and progress bar -->
+                <div id="waiting-section">
+                    <p class="text-gray-600 mb-2">Waiting for hospital response...</p>
+                    <div class="countdown" id="countdown">3</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progress-fill"></div>
+                    </div>
+                </div>
+                
+                <!-- Hospital acceptance notification -->
+                <div id="accepted-notification" class="accepted-notification hidden">
+                    <div class="bg-white p-3 rounded-full inline-block mb-3">
+                        <i class="fas fa-check-circle text-green-500 text-3xl"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Request Accepted!</h3>
+                    <p id="accepted-hospital" class="mb-3">Hospital is preparing for your arrival.</p>
+                    <p class="font-semibold">ETA: <span id="accepted-eta">8 Minutes</span></p>
+                </div>
+                
+                <button id="new-request" class="bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition mt-6">
+                    <i class="fas fa-plus-circle mr-2"></i>New Emergency Request
+                </button>
+            </div>
+        </div>
+        
+        <!-- Footer -->
+        <footer class="text-center py-6 text-gray-600 text-sm border-t border-gray-200 mt-8">
+            <p>FastCare Emergency Assistance &copy; 2023 - All rights reserved</p>
+            <p class="mt-1">Designed and developed by <span class="font-semibold text-blue-600">Harsh Shinde</span></p>
+        </footer>
+    </div>
+
+    <script>
+        // Hospital data based on medical problems
+        const hospitalsByProblem = {
+            'heart-attack': [
+                { id: 'H1', name: 'City Heart Center', specialty: 'Cardiology', distance: '1.2 mi', eta: '5 min', rating: '4.8' },
+                { id: 'H2', name: 'Metropolitan Cardiac Hospital', specialty: 'Cardiac Care', distance: '2.5 mi', eta: '8 min', rating: '4.6' },
+                { id: 'H3', name: 'General Hospital - Cardiac Unit', specialty: 'Emergency Cardiology', distance: '3.1 mi', eta: '10 min', rating: '4.4' }
+            ],
+            'stroke': [
+                { id: 'H4', name: 'NeuroCare Institute', specialty: 'Neurology', distance: '1.8 mi', eta: '6 min', rating: '4.7' },
+                { id: 'H5', name: 'Regional Stroke Center', specialty: 'Stroke Treatment', distance: '2.2 mi', eta: '7 min', rating: '4.9' },
+                { id: 'H6', name: 'General Hospital - Neuro Unit', specialty: 'Neurological Emergency', distance: '3.5 mi', eta: '12 min', rating: '4.5' }
+            ],
+            'accident': [
+                { id: 'H7', name: 'City Trauma Center', specialty: 'Trauma Surgery', distance: '0.8 mi', eta: '3 min', rating: '4.8' },
+                { id: 'H8', name: 'Metro Emergency Hospital', specialty: 'Emergency Medicine', distance: '1.5 mi', eta: '5 min', rating: '4.6' },
+                { id: 'H9', name: 'General Hospital - ER', specialty: 'Emergency Care', distance: '2.3 mi', eta: '8 min', rating: '4.4' }
+            ],
+            'respiratory': [
+                { id: 'H10', name: 'Pulmonary Care Center', specialty: 'Pulmonology', distance: '2.1 mi', eta: '7 min', rating: '4.7' },
+                { id: 'H11', name: 'Respiratory Institute', specialty: 'Respiratory Care', distance: '3.0 mi', eta: '10 min', rating: '4.5' },
+                { id: 'H12', name: 'General Hospital - Pulmonary', specialty: 'Respiratory Emergency', distance: '1.7 mi', eta: '6 min', rating: '4.3' }
+            ],
+            'allergic': [
+                { id: 'H13', name: 'Allergy & Immunology Center', specialty: 'Allergy Treatment', distance: '1.9 mi', eta: '6 min', rating: '4.6' },
+                { id: 'H14', name: 'Metro Emergency Hospital', specialty: 'Emergency Medicine', distance: '1.5 mi', eta: '5 min', rating: '4.6' },
+                { id: 'H15', name: 'General Hospital - ER', specialty: 'Emergency Care', distance: '2.3 mi', eta: '8 min', rating: '4.4' }
+            ],
+            'other': [
+                { id: 'H16', name: 'Metro Emergency Hospital', specialty: 'Emergency Medicine', distance: '1.5 mi', eta: '5 min', rating: '4.6' },
+                { id: 'H17', name: 'General Hospital - ER', specialty: 'Emergency Care', distance: '2.3 mi', eta: '8 min', rating: '4.4' },
+                { id: 'H18', name: 'City Medical Center', specialty: 'Multi-Specialty', distance: '2.8 mi', eta: '9 min', rating: '4.5' }
+            ]
+        };
+        
+        // Current selections
+        let currentSelections = {
+            problem: null,
+            hospital: null,
+            urgency: null
+        };
+        
+        // Function to update the current time
+        function updateTime() {
+            const now = new Date();
+            const timeString = now.getHours() + ':' + (now.getMinutes() < 10 ? '0' : '') + now.getMinutes();
+            document.getElementById('current-time').textContent = timeString;
+        }
+        
+        // Function to navigate between steps
+        function goToStep(stepNumber) {
+            // Hide all steps
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            
+            // Show the selected step
+            document.getElementById(`step${stepNumber}`).classList.add('active');
+            
+            // Update step indicator
+            document.querySelectorAll('.step').forEach(step => {
+                step.classList.remove('active');
+                if (parseInt(step.dataset.step) <= stepNumber) {
+                    step.classList.add('active');
+                }
+            });
+        }
+        
+        // Function to create hospital card
+        function createHospitalCard(hospital) {
+            const card = document.createElement('div');
+            card.className = 'hospital-card glass-effect rounded-xl p-5 border-2 border-gray-200';
+            card.dataset.id = hospital.id;
+            
+            card.innerHTML = `
+                <div class="flex justify-between items-start mb-3">
+                    <div>
+                        <h3 class="font-bold text-lg">${hospital.name}</h3>
+                        <p class="text-gray-600">${hospital.specialty}</p>
+                    </div>
+                    <div class="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm font-semibold">
+                        ${hospital.rating} ★
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-2 text-sm">
+                    <div>
+                        <p class="text-gray-500">Distance</p>
+                        <p class="font-semibold">${hospital.distance}</p>
+                    </div>
+                    <div>
+                        <p class="text-gray-500">ETA</p>
+                        <p class="font-semibold">${hospital.eta}</p>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+        
+        // Function to populate hospitals based on selected problem
+        function populateHospitals(problem) {
+            const hospitalList = document.getElementById('hospital-list');
+            hospitalList.innerHTML = '';
+            
+            if (hospitalsByProblem[problem]) {
+                hospitalsByProblem[problem].forEach(hospital => {
+                    const card = createHospitalCard(hospital);
+                    card.addEventListener('click', () => {
+                        // Deselect all hospitals
+                        document.querySelectorAll('.hospital-card').forEach(c => {
+                            c.classList.remove('selected');
+                        });
+                        
+                        // Select this hospital
+                        card.classList.add('selected');
+                        currentSelections.hospital = hospital;
+                    });
+                    
+                    hospitalList.appendChild(card);
+                });
+            }
+        }
+        
+        // Function to simulate hospital acceptance after 3 seconds
+        function simulateHospitalAcceptance() {
+            const countdownElement = document.getElementById('countdown');
+            const progressFill = document.getElementById('progress-fill');
+            const waitingSection = document.getElementById('waiting-section');
+            const acceptedNotification = document.getElementById('accepted-notification');
+            const acceptedHospital = document.getElementById('accepted-hospital');
+            const acceptedEta = document.getElementById('accepted-eta');
+            
+            // Set the hospital name and ETA in the acceptance notification
+            acceptedHospital.textContent = `${currentSelections.hospital.name} is preparing for your arrival.`;
+            acceptedEta.textContent = `${currentSelections.hospital.eta}`;
+            
+            // Start countdown from 3
+            let countdown = 3;
+            countdownElement.textContent = countdown;
+            
+            // Start progress bar animation
+            progressFill.style.width = '0%';
+            setTimeout(() => {
+                progressFill.style.width = '100%';
+            }, 10);
+            
+            // Update countdown every second
+            const countdownInterval = setInterval(() => {
+                countdown--;
+                countdownElement.textContent = countdown;
+                
+                if (countdown <= 0) {
+                    clearInterval(countdownInterval);
+                    
+                    // Hide waiting section and show acceptance notification
+                    waitingSection.classList.add('hidden');
+                    acceptedNotification.classList.remove('hidden');
+                }
+            }, 1000);
+        }
+        
+        // Function to send emergency request
+        function sendEmergencyRequest() {
+            // Validate inputs
+            if (!currentSelections.problem || !currentSelections.hospital || !currentSelections.urgency) {
+                alert('Please complete all required fields before sending the request.');
+                return;
+            }
+            
+            if (!document.getElementById('consent-checkbox').checked) {
+                alert('Please consent to share your information with the hospital.');
+                return;
+            }
+            
+            // Show confirmation with details
+            document.getElementById('confirmation-problem').textContent = `Problem: ${currentSelections.problem}`;
+            document.getElementById('confirmation-hospital').textContent = `Hospital: ${currentSelections.hospital.name}`;
+            document.getElementById('confirmation-urgency').textContent = `Urgency: ${currentSelections.urgency}`;
+            
+            // Reset acceptance notification
+            document.getElementById('waiting-section').classList.remove('hidden');
+            document.getElementById('accepted-notification').classList.add('hidden');
+            
+            // Show confirmation screen
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById('confirmation').classList.add('active');
+            
+            // Start the hospital acceptance simulation after a brief delay
+            setTimeout(simulateHospitalAcceptance, 500);
+        }
+        
+        // Initialize the application
+        function initApp() {
+            // Update time
+            updateTime();
+            setInterval(updateTime, 60000);
+            
+            // Problem selection
+            document.querySelectorAll('.problem-card').forEach(card => {
+                card.addEventListener('click', () => {
+                    // Deselect all problems
+                    document.querySelectorAll('.problem-card').forEach(c => {
+                        c.classList.remove('selected');
+                    });
+                    
+                    // Select this problem
+                    card.classList.add('selected');
+                    currentSelections.problem = card.dataset.problem;
+                });
+            });
+            
+            // Urgency selection
+            document.querySelectorAll('.urgency-option').forEach(option => {
+                option.addEventListener('click', () => {
+                    // Deselect all urgency options
+                    document.querySelectorAll('.urgency-option').forEach(o => {
+                        o.classList.remove('selected');
+                    });
+                    
+                    // Select this urgency
+                    option.classList.add('selected');
+                    currentSelections.urgency = option.dataset.urgency;
+                });
+            });
+            
+            // Step navigation
+            document.getElementById('next-step1').addEventListener('click', () => {
+                if (!currentSelections.problem) {
+                    alert('Please select a medical problem to continue.');
+                    return;
+                }
+                
+                // Populate hospitals based on selected problem
+                populateHospitals(currentSelections.problem);
+                
+                // Update selected problem display
+                const problemText = document.querySelector(`.problem-card[data-problem="${currentSelections.problem}"] h3`).textContent;
+                document.getElementById('selected-problem').textContent = problemText;
+                
+                goToStep(2);
+            });
+            
+            document.getElementById('prev-step2').addEventListener('click', () => {
+                goToStep(1);
+            });
+            
+            document.getElementById('next-step2').addEventListener('click', () => {
+                if (!currentSelections.hospital) {
+                    alert('Please select a hospital to continue.');
+                    return;
+                }
+                
+                // Update selected hospital display
+                document.getElementById('selected-hospital').textContent = currentSelections.hospital.name;
+                
+                goToStep(3);
+            });
+            
+            document.getElementById('prev-step3').addEventListener('click', () => {
+                goToStep(2);
+            });
+            
+            document.getElementById('send-request').addEventListener('click', sendEmergencyRequest);
+            
+            document.getElementById('new-request').addEventListener('click', () => {
+                // Reset selections
+                currentSelections = {
+                    problem: null,
+                    hospital: null,
+                    urgency: null
+                };
+                
+                // Reset UI
+                document.querySelectorAll('.problem-card, .hospital-card, .urgency-option').forEach(el => {
+                    el.classList.remove('selected');
+                });
+                
+                document.getElementById('situation-details').value = '';
+                document.getElementById('consent-checkbox').checked = false;
+                
+                // Go back to step 1
+                goToStep(1);
+            });
+        }
+        
+        // Initialize when the page loads
+        window.onload = initApp;
+    </script>
+</body>
+</html>
